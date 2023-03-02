@@ -1,0 +1,13 @@
+{
+  "db": {
+    "host": "",
+    "port": 0,
+    "url": "mongodb+srv://mary:KuJ5XlKFEgFFLsrG@cluster0.5bbyoid.mongodb.net/lb3-twitter",
+    "database": "lb3-twitter",
+    "password": "",
+    "name": "db",
+    "user": "",
+    "useNewUrlParser": true,
+    "connector": "mongodb"
+  }
+}
