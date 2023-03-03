@@ -4,12 +4,11 @@
   "base": "User",
   "idInjection": true,
   "options": {
-    "validateUpsert": true
+    "validateUpsert": true,
+    "strictObjectIDCoercion": true
   },
   "mixins": {},
-  "scope": {
-    "include": "tweets"
-  },
+  "scope": {},
   "properties": {
     "id": {
       "type": "string"
