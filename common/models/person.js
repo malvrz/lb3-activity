@@ -105,7 +105,7 @@ module.exports = function(Person) {
                 followedId: id,
                 followerId: access.userId
             }
-            const ret = await Followships.findOne(filter)
+            const ret = await Followships.findOne({where: filter})
             if (ret) return await Followships.deleteById(ret.id)
         })
     }
@@ -181,14 +181,42 @@ module.exports = function(Person) {
         let ret = []
 
         return await Followships.find({where: filter}).then(async records => {
-            for (const record of records) {
-                ret.push(record[key])
+            const length = records.length
+            for (var i = 0; i < length; i++) {
+                ret.push(records[i][key])
             }
             return ret
         })
     }
 
     // ------ End of private functions ----- //
+
+    Person.disableRemoteMethodByName('patchOrCreate')
+    Person.disableRemoteMethodByName('create')
+    Person.disableRemoteMethodByName('replaceOrCreate')
+    Person.disableRemoteMethodByName('exists')
+    Person.disableRemoteMethodByName('find')
+    Person.disableRemoteMethodByName('findById')
+    Person.disableRemoteMethodByName('findOne')
+    Person.disableRemoteMethodByName('destroyById')
+    Person.disableRemoteMethodByName('count')
+    Person.disableRemoteMethodByName('replaceById')
+    Person.disableRemoteMethodByName('createChangeStream')
+    Person.disableRemoteMethodByName('updateAll')
+    Person.disableRemoteMethodByName('prototype.patchAttributes')
+    Person.disableRemoteMethodByName('upsertWithWhere')
+    Person.disableRemoteMethodByName('resetPassword')
+    Person.disableRemoteMethodByName('setPassword')
+    Person.disableRemoteMethodByName('changePassword')
+    Person.disableRemoteMethodByName('confirm')
+    Person.disableRemoteMethodByName('prototype.verify')
+
+    Person.disableRemoteMethodByName('prototype.__create__tweets')
+    Person.disableRemoteMethodByName('prototype.__delete__tweets')
+    Person.disableRemoteMethodByName('prototype.__findById__tweets')
+    Person.disableRemoteMethodByName('prototype.__updateById__tweets')
+    Person.disableRemoteMethodByName('prototype.__destroyById__tweets')
+    Person.disableRemoteMethodByName('prototype.__count__tweets')
 
     Person.disableRemoteMethodByName('prototype.__create__followships')
     Person.disableRemoteMethodByName('prototype.__get__followships')
@@ -200,4 +228,12 @@ module.exports = function(Person) {
     Person.disableRemoteMethodByName('prototype.__exists__followships')
     Person.disableRemoteMethodByName('prototype.__link__followships')
     Person.disableRemoteMethodByName('prototype.__unlink__followships')
+
+    Person.disableRemoteMethodByName('prototype.__get__accessTokens')
+    Person.disableRemoteMethodByName('prototype.__create__accessTokens')
+    Person.disableRemoteMethodByName('prototype.__delete__accessTokens')
+    Person.disableRemoteMethodByName('prototype.__findById__accessTokens')
+    Person.disableRemoteMethodByName('prototype.__updateById__accessTokens')
+    Person.disableRemoteMethodByName('prototype.__destroyById__accessTokens')
+    Person.disableRemoteMethodByName('prototype.__count__accessTokens')
 };

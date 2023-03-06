@@ -26,4 +26,17 @@ module.exports = function(Tweet) {
 
     Tweet.disableRemoteMethodByName('prototype.patchAttributes')
     Tweet.disableRemoteMethodByName('replaceById')
+    Tweet.disableRemoteMethodByName('patchOrCreate')
+    Tweet.disableRemoteMethodByName('replaceOrCreate')
+    Tweet.disableRemoteMethodByName('create')
+    Tweet.disableRemoteMethodByName('exists')
+    Tweet.disableRemoteMethodByName('count')
+    Tweet.disableRemoteMethodByName('findOne')
+    Tweet.disableRemoteMethodByName('updateAll')
+    Tweet.disableRemoteMethodByName('upsertWithWhere')
+    Tweet.disableRemoteMethodByName('createChangeStream')
+
+    Tweet.disableRemoteMethodByName('prototype.__findById__person')
+    Tweet.disableRemoteMethodByName('prototype.__get__person')
+    
 };
