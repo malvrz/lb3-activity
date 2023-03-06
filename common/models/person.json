@@ -7,7 +7,9 @@
     "validateUpsert": true,
     "strictObjectIDCoercion": true
   },
-  "mixins": {},
+  "mixins": {
+    "InjectCurrentUser": {}
+  },
   "scope": {},
   "properties": {
     "id": {

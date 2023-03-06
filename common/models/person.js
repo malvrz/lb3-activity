@@ -1,7 +1,5 @@
 'use strict';
 
-const { AccessToken } = require("loopback");
-
 module.exports = function(Person) {
 
     Person.signup = async function(email, password) {
@@ -22,11 +20,8 @@ module.exports = function(Person) {
     )
 
     Person.profile = async function(req) {
-        const accessToken = req.query.access_token
-
-        return AccessToken.findById(accessToken).then(async access => {
-            return Person.findById(access.userId, {include: ['tweets']})
-        })
+        const userId = req.accessToken.userId
+        return Person.findById(userId, {include: ['tweets']})
     }
     Person.remoteMethod(
         'profile', {
@@ -42,13 +37,10 @@ module.exports = function(Person) {
     )
 
     Person.tweets = async function(req, content) {
-        const accessToken = req.query.access_token
         const { Tweet } = Person.app.models
         
-        return AccessToken.findById(accessToken).then(async access => {
-            return Person.findById(access.userId).then(async person => {
-                return Tweet.create({content, personId: person.id})
-            })
+        return Person.findById(req.accessToken.userId).then(async person => {
+            return Tweet.create({content, personId: person.id})
         })
     }
     Person.remoteMethod(
@@ -65,21 +57,18 @@ module.exports = function(Person) {
         }
     )
 
-    Person.follow = async function(req, id, next){
-        const accessToken = req.query.access_token
+    Person.follow = async function(req, id){
         const { Followships } = Person.app.models
 
-        return AccessToken.findById(accessToken).then(async access => {
-            const filter = {
-                followedId: id,
-                followerId: access.userId
-            }
+        const filter = {
+            followedId: id,
+            followerId: req.accessToken.userId
+        }
 
-            return await Followships.count(filter).then(c => {
-                if (c === 0 && filter.followerId !== filter.followedId) {
-                    return Followships.create(filter)
-                }
-            })
+        return await Followships.count(filter).then(c => {
+            if (c === 0 && filter.followerId !== filter.followedId) {
+                return Followships.create(filter)
+            }
         })
     }
     Person.remoteMethod(
@@ -97,17 +86,16 @@ module.exports = function(Person) {
     )
 
     Person.unfollow = async function(req, id){
-        const accessToken = req.query.access_token
         const { Followships } = Person.app.models
 
-        return AccessToken.findById(accessToken).then(async access => {
-            const filter = {
+        const filter = {
+            where: {
                 followedId: id,
-                followerId: access.userId
+                followerId: req.accessToken.userId
             }
-            const ret = await Followships.findOne({where: filter})
-            if (ret) return await Followships.deleteById(ret.id)
-        })
+        }
+        const followships = await Followships.findOne(filter)
+        if (followships) return await Followships.deleteById(followships.id)
     }
     Person.remoteMethod(
         'unfollow', {
@@ -122,17 +110,8 @@ module.exports = function(Person) {
         }
     )
 
-    Person.getFollowers = async function(req, id){
-        const accessToken = req.query.access_token
-
-        return await AccessToken.findById(accessToken).then(async access => {
-            const rec = await getFollowshipsId({followedId: id}, 'followerId')
-            return Person.find(
-                {
-                    where: {id: {inq: [...rec]}}
-                }
-            )
-        })
+    Person.getFollowers = async function(id){
+        return getFollowships('followers', id)
     }
     Person.remoteMethod(
         'getFollowers', {
@@ -141,24 +120,14 @@ module.exports = function(Person) {
                 verb: 'get'
             },
             accepts: [
-                {arg: 'req', type: 'object', http: {source: 'req'}},
                 {arg: 'id', type: 'string', required: true}
             ],
             returns: {arg:'data', type: 'Person', root: true}
         }
     )
 
-    Person.getFollowing = async function(req, id) {
-        const accessToken = req.query.access_token
-
-        return await AccessToken.findById(accessToken).then(async access => {
-            const rec = await getFollowshipsId({followerId: id}, 'followedId')
-            return Person.find(
-                {
-                    where: {id: {inq: [...rec]}}
-                }
-            )
-        })
+    Person.getFollowing = async function(id) {
+        return getFollowships('following', id)
     }
     Person.remoteMethod(
         'getFollowing', {
@@ -167,7 +136,6 @@ module.exports = function(Person) {
                 verb: 'get'
             },
             accepts: [
-                {arg: 'req', type: 'object', http: {source: 'req'}},
                 {arg: 'id', type: 'string', required: true}
             ],
             returns: {arg:'data', type: 'Person', root: true}
@@ -176,16 +144,16 @@ module.exports = function(Person) {
 
     // ------ Private functions ----- //
 
-    async function getFollowshipsId(filter, key) {
+    async function getFollowships(mapValue, id) {
         const { Followships } = Person.app.models
-        let ret = []
+        const ids = await Followships.getIds(mapValue, id)
 
-        return await Followships.find({where: filter}).then(async records => {
-            const length = records.length
-            for (var i = 0; i < length; i++) {
-                ret.push(records[i][key])
+        return await Person.find({
+            where: {
+                id: {
+                    inq: [...ids]
+                }
             }
-            return ret
         })
     }
 
